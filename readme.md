@@ -19,6 +19,7 @@ The server will listen to port 8080
 
 To run a simple integration test, execute  
 ```npm
+npm i
 npm run test
 ```
 from the root folder.  
@@ -26,6 +27,7 @@ from the root folder.
 ## Unit tests ##
 Unit tests for the server scripts can be done by executing  
 ```npm
+npm i
 npm run test
 ```
 from the server directory  

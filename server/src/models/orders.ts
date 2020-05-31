@@ -12,8 +12,8 @@ export class Order extends Model {
     public status!: string;
     public assignee!: string;
 
-    public created_at!: string;
-    public updated_at!: string;
+    public created_at!: Date;
+    public updated_at!: Date;
 }
 
 Order.init({

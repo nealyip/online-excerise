@@ -1,10 +1,9 @@
 import {Request, Response} from "express";
 import {body, param, query, validationResult} from "express-validator";
-import {getDistance, now, sendUnprocessableEntryResponse} from "../helper";
+import {getDistance, sendUnprocessableEntryResponse} from "../helper";
 import {Order} from "../models/orders";
-import {v4} from 'uuid';
 import * as log from 'loglevel';
-import sequelize from "../models/sequelize";
+import {ClientError, OrderService} from '../services';
 
 type OrderPostRequestBody = { origin: [string, string], destination: [string, string] };
 type OrderPatchRequestBody = { status: 'TAKEN' | string };
@@ -45,17 +44,9 @@ export async function orderPost(req: Request<any, any, OrderPostRequestBody>, re
 
         const distance = await getDistance(req.body.origin, req.body.destination);
 
-        const order: Order = await Order.create({
-            uuid: v4().replace(/-/g, ''),
-            origin_latitude: req.body.origin[0],
-            origin_longitude: req.body.origin[1],
-            destination_latitude: req.body.destination[0],
-            destination_longitude: req.body.destination[1],
-            distance: distance,
-            status: 'UNASSIGNED',
-            created_at: now(),
-            updated_at: now(),
-        });
+        const service = new OrderService();
+
+        const order: Order = await service.create(req.body.origin, req.body.destination, distance);
 
         log.info('Created successfully', order.toJSON());
         res.send({
@@ -84,39 +75,16 @@ export async function orderPatch(req: Request<OrderPatchRequestParam, any, Order
     if (!err.isEmpty()) {
         return sendUnprocessableEntryResponse(res, err);
     }
-
-    class ClientError extends Error {
-    }
-
     try {
 
-        await sequelize.transaction(async transaction => {
-            const order: Order = await Order.findOne({
-                where:{
-                    uuid: Buffer.from(req.params.id, 'hex'),
-                },
-                transaction,
-                lock: true
-            });
+        const orderService = new OrderService();
 
-            if (!order) {
-                throw new ClientError('Order not found');
-            }
-            if (order.status !== 'UNASSIGNED'){
-                throw new ClientError('Order has been taken.');
-            }
+        const assignee = `${Math.floor(Math.random() * 10) + 1}`; // Simulate an assignee here.;
+        await orderService.assign(req.params.id, assignee);
 
-            order.status = 'TAKEN';
-            order.assignee = `${Math.floor(Math.random() * 10) + 1}`; // Simulate an assignee here.
-            await order.save({
-                transaction
-            });
-
-            res.send({
-                "status": "SUCCESS"
-            });
+        res.send({
+            "status": "SUCCESS"
         });
-
     } catch (e) {
         res.status(e instanceof ClientError ? 422 : 500);
         res.send({error: e.message});
@@ -142,12 +110,8 @@ export async function ordersGet(req: Request<any, any, any, OrdersGetRequestQuer
 
     try {
 
-        const orders = await Order.findAll({
-            limit,
-            offset: (page - 1) * limit,
-            attributes: ['uuid', 'distance', 'status'],
-            order: [['created_at', 'DESC']]
-        });
+        const orderService = new OrderService();
+        const orders = await orderService.list(page, limit);
 
         res.send(orders.map(order => ({
             id: order.uuid,

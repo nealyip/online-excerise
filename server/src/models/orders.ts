@@ -4,10 +4,10 @@ import {default as sequelize} from './sequelize';
 export class Order extends Model {
     public id!: number;
     public uuid!: string;
-    public origin_latitude!: string;
-    public origin_longitude!: string;
-    public destination_latitude!: string;
-    public destination_longitude!: string;
+    public origin_latitude!: number;
+    public origin_longitude!: number;
+    public destination_latitude!: number;
+    public destination_longitude!: number;
     public distance!: number;
     public status!: string;
     public assignee!: string;
@@ -34,19 +34,19 @@ Order.init({
         }
     },
     origin_latitude: {
-        type: DataTypes.STRING,
+        type: DataTypes.FLOAT,
         allowNull: false,
     },
     origin_longitude: {
-        type: DataTypes.STRING,
+        type: DataTypes.FLOAT,
         allowNull: false,
     },
     destination_latitude: {
-        type: DataTypes.STRING,
+        type: DataTypes.FLOAT,
         allowNull: false,
     },
     destination_longitude: {
-        type: DataTypes.STRING,
+        type: DataTypes.FLOAT,
         allowNull: false,
     },
     distance: {

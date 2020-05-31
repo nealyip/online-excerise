@@ -6,12 +6,19 @@ Change the db password if necessary.
 To start to build the app  
 use the following command  
 ```
+docker-compose build web1
 docker-compose up
 ```
 
-To force rebuild after any update from the source files in the server directory  
+To rebuild only when source files have updates  
 ```docker
-docker-compose up --build -v
+docker-compose build web1
+docker-compose up -d web1
+```
+
+To force rebuild after any dependencies update from the source files in the server directory  
+```docker
+docker-compose up --build -V
 ```
 
 After the docker-compose completes, all the required initialization should have been done.  

@@ -22,3 +22,13 @@ create table if not exists `orders`
 );
 
 alter table `orders` add index orders_created_at_uuid_distance_status_index(created_at, uuid, distance, status);
+
+create table if not exists `order_histories`
+(
+    id            bigint unsigned auto_increment primary key,
+    order_id      bigint unsigned not null,
+    status        varchar(100) not null,
+    assignee      varchar(100) null,
+    created_at     timestamp   not null,
+    updated_at    timestamp   DEFAULT CURRENT_TIMESTAMP  not null
+);

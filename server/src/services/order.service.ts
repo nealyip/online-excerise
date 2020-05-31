@@ -3,21 +3,24 @@ import {v4} from "uuid";
 import {now} from "../helper";
 import sequelize from "../models/sequelize";
 import {Sequelize} from "sequelize";
+import {OrderHistory} from "../models/order_history";
 
 export class ClientError extends Error {
 }
 
 export class OrderService {
     private order: typeof Order;
+    private orderHistory: typeof OrderHistory;
     private sequelize: Sequelize;
 
-    constructor(order?: typeof Order, sequelizeInstance?: Sequelize) {
+    constructor(sequelizeInstance?: Sequelize, order?: typeof Order, orderHistory?: typeof OrderHistory) {
         this.order = order || Order;
+        this.orderHistory = orderHistory || OrderHistory;
         this.sequelize = sequelizeInstance || sequelize;
     }
 
     async create(origin: [string, string], destination: [string, string], distance: number): Promise<Order> {
-        return this.order.create({
+        const order = await this.order.create({
             uuid: v4().replace(/-/g, ''),
             origin_latitude: origin[0],
             origin_longitude: origin[1],
@@ -28,6 +31,15 @@ export class OrderService {
             created_at: now(),
             updated_at: now(),
         });
+
+        await this.orderHistory.create({
+            order_id: order.id,
+            status: order.status,
+            assignee: order.assignee,
+            created_at: now(),
+            updated_at: now(),
+        });
+        return order;
     }
 
     async assign(id: string, assignee: string): Promise<void> {
@@ -52,6 +64,16 @@ export class OrderService {
             order.updated_at = now();
             order.assignee = assignee; // Simulate an assignee here.
             await order.save({
+                transaction
+            });
+
+            await this.orderHistory.create({
+                order_id: order.id,
+                status: order.status,
+                assignee: order.assignee,
+                created_at: now(),
+                updated_at: now(),
+            }, {
                 transaction
             });
         });

@@ -86,6 +86,7 @@ export async function orderPatch(req: Request<OrderPatchRequestParam, any, Order
             "status": "SUCCESS"
         });
     } catch (e) {
+        log.error('Failed to patch', e);
         res.status(e instanceof ClientError ? 422 : 500);
         res.send({error: e.message});
     }

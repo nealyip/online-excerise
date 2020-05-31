@@ -32,7 +32,7 @@ npm run test
 from the root folder.  
 
 ## Unit tests ##
-Unit tests for the server scripts can be done by executing  
+Unit tests for the server scripts that can be done by executing  
 ```npm
 npm i
 npm run test

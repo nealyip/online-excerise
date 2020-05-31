@@ -10,7 +10,7 @@ docker-compose build web1
 docker-compose up
 ```
 
-To rebuild only when source files have updates  
+To rebuild source files only  
 ```docker
 docker-compose build web1
 docker-compose up -d web1

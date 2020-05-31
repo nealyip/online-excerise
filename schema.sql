@@ -6,7 +6,8 @@ grant select, update, delete, insert on `orders`.* to 'orders'@'%';
 
 create table if not exists `orders`
 (
-    id            varchar(191) not null,
+    id            bigint unsigned auto_increment primary key,
+    uuid          binary(16),
     origin_latitude      varchar(100) not null,
     origin_longitude     varchar(100) not null,
     destination_latitude      varchar(100) not null,
@@ -17,7 +18,7 @@ create table if not exists `orders`
     created_at     timestamp   not null,
     updated_at    timestamp   DEFAULT CURRENT_TIMESTAMP  not null,
     constraint orders_id_uindex
-        unique (id)
+        unique (uuid)
 );
 
-alter table `orders` add index orders_created_at_id_distance_status_index(created_at, id, distance, status);
+alter table `orders` add index orders_created_at_uuid_distance_status_index(created_at, uuid, distance, status);

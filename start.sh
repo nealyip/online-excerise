@@ -7,6 +7,6 @@ until mysql -h $MYSQL_HOST -P 3306 -u root; do
 done
 
 >&2 echo "Mysql is up - executing command"
-mysql -h $MYSQL_HOST -P 3306 -u root < /app/schema.sql
+mysql -h $MYSQL_HOST -P 3306 -u root -f < /app/schema.sql
 
 echo "done"

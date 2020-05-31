@@ -47,7 +47,7 @@ describe('GET /orders', () => {
             .expect(200)
             .then(response => {
                 const found = response.body.find(item => item.id === gotID);
-                assert.isNotNull(found);
+                assert.isDefined(found);
                 assert.equal(found.status, 'TAKEN');
                 assert.approximately(found.distance, 23857, 500);
             });

@@ -46,7 +46,7 @@ export async function orderPost(req: Request<any, any, OrderPostRequestBody>, re
         const distance = await getDistance(req.body.origin, req.body.destination);
 
         const order: Order = await Order.create({
-            id: v4().replace(/-/g, ''),
+            uuid: v4().replace(/-/g, ''),
             origin_latitude: req.body.origin[0],
             origin_longitude: req.body.origin[1],
             destination_latitude: req.body.destination[0],
@@ -59,7 +59,7 @@ export async function orderPost(req: Request<any, any, OrderPostRequestBody>, re
 
         log.info('Created successfully', order.toJSON());
         res.send({
-            "id": order.id,
+            "id": order.uuid,
             "distance": order.distance,
             "status": order.status
         });
@@ -91,7 +91,10 @@ export async function orderPatch(req: Request<OrderPatchRequestParam, any, Order
     try {
 
         await sequelize.transaction(async transaction => {
-            const order: Order = await Order.findByPk(req.params.id, {
+            const order: Order = await Order.findOne({
+                where:{
+                    uuid: Buffer.from(req.params.id, 'hex'),
+                },
                 transaction,
                 lock: true
             });
@@ -142,11 +145,15 @@ export async function ordersGet(req: Request<any, any, any, OrdersGetRequestQuer
         const orders = await Order.findAll({
             limit,
             offset: (page - 1) * limit,
-            attributes: ['id', 'distance', 'status'],
+            attributes: ['uuid', 'distance', 'status'],
             order: [['created_at', 'DESC']]
         });
 
-        res.send(orders);
+        res.send(orders.map(order => ({
+            id: order.uuid,
+            distance: order.distance,
+            status: order.status
+        })));
     } catch (err) {
         log.error('Failed to query', err);
         res.status(500);

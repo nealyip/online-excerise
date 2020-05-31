@@ -1,8 +1,9 @@
-import {DataTypes, Model} from "sequelize";
+import {DataTypes, Model, UUIDV4} from "sequelize";
 import {default as sequelize} from './sequelize';
 
 export class Order extends Model {
-    public id!: string;
+    public id!: number;
+    public uuid!: string;
     public origin_latitude!: string;
     public origin_longitude!: string;
     public destination_latitude!: string;
@@ -17,8 +18,20 @@ export class Order extends Model {
 
 Order.init({
     id: {
-        type: DataTypes.STRING,
-        primaryKey: true
+        type: DataTypes.NUMBER.UNSIGNED,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    uuid: {
+        type: 'binary(16)',
+        allowNull: false,
+        get() {
+            const value: Buffer = this.getDataValue('uuid');
+            return value ? value.toString('hex') : null;
+        },
+        set(value: string) {
+            this.setDataValue('uuid', Buffer.from(value, 'hex') || null);
+        }
     },
     origin_latitude: {
         type: DataTypes.STRING,
